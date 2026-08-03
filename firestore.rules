@@ -1,0 +1,150 @@
+rules_version = '2';
+
+/**
+ * SkillBridge Firestore Security Rules
+ *
+ * NOTE ON ADMIN ROLE CHECK TRADEOFF:
+ * Admin status is determined by inspecting the user's role field in the Firestore collection
+ * `users/{request.auth.uid}` via a `get()` call. This ensures true database-backed role governance.
+ * TRADEOFF: Using `get()` inside rules consumes 1 extra document read per security evaluation check.
+ * If cost optimization becomes critical in high-traffic production, consider migrating role claims
+ * to Firebase Auth Custom User Claims (`request.auth.token.role`).
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Admin helper: Reads the requesting user's document in the users collection
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // =========================================================================
+    // 1. Users Collection (/users/{uid})
+    // =========================================================================
+    match /users/{uid} {
+      // Authenticated users can read their own profile doc; admins can read any user profile
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Users can create their own document during signup (must match auth.uid)
+      allow create: if isOwner(uid) && request.resource.data.uid == uid;
+
+      // Users can update their own profile, EXCEPT the `role` field cannot be modified once set
+      allow update: if isOwner(uid) &&
+        request.resource.data.role == resource.data.role;
+
+      // Deletion is restricted to platform admins
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 2. Student Profiles Collection (/studentProfiles/{uid})
+    // =========================================================================
+    match /studentProfiles/{uid} {
+      // Only the student owner or an admin can read the profile
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Only the student owner can create or update their profile data
+      allow write: if isOwner(uid);
+    }
+
+    // =========================================================================
+    // 3. Employer Profiles Collection (/employerProfiles/{uid})
+    // =========================================================================
+    match /employerProfiles/{uid} {
+      // Only the employer owner or an admin can read the profile
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Only the employer owner can create or update their profile data
+      allow write: if isOwner(uid);
+    }
+
+    // =========================================================================
+    // 4. Job Listings Collection (/listings/{listingId})
+    // =========================================================================
+    match /listings/{listingId} {
+      // Anyone logged in can read approved listings; employers can read their own; admins can read all
+      allow read: if isAuthenticated() && (
+        resource.data.status == 'approved' ||
+        resource.data.employerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Employer can create a listing if employerId matches their auth UID, and initial status must be 'pending' or 'approved'
+      allow create: if isAuthenticated() &&
+        request.resource.data.employerId == request.auth.uid &&
+        (request.resource.data.status == 'pending' || request.resource.data.status == 'approved');
+
+      // Employer can update non-status fields of their own listing (status must remain unchanged)
+      // Admins can update any field (including approving/rejecting/closing status)
+      allow update: if (
+        isAuthenticated() &&
+        resource.data.employerId == request.auth.uid &&
+        request.resource.data.employerId == request.auth.uid &&
+        request.resource.data.status == resource.data.status
+      ) || isAdmin();
+
+      // Employers can delete their own listings; admins can delete any
+      allow delete: if (
+        isAuthenticated() && resource.data.employerId == request.auth.uid
+      ) || isAdmin();
+    }
+
+    // =========================================================================
+    // 5. Job Applications Collection (/applications/{appId})
+    // =========================================================================
+    match /applications/{appId} {
+      // Student who applied can read; Employer hosting the listing can read; Admins can read
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        get(/databases/$(database)/documents/listings/$(resource.data.listingId)).data.employerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Student can submit an application for themselves (studentId must match auth.uid)
+      allow create: if isAuthenticated() &&
+        request.resource.data.studentId == request.auth.uid;
+
+      // Student applicant or listing employer or admin can update application (e.g. status updates)
+      allow update: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        get(/databases/$(database)/documents/listings/$(resource.data.listingId)).data.employerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Only admins can delete application records
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 6. Student Feedback Collection (/feedback/{feedbackId})
+    // =========================================================================
+    match /feedback/{feedbackId} {
+      // Student who left feedback or an admin can read
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Student can submit feedback for themselves
+      allow create: if isAuthenticated() &&
+        request.resource.data.studentId == request.auth.uid;
+
+      // Feedback cannot be edited after creation by anyone
+      allow update: if false;
+
+      // Admins can delete feedback records
+      allow delete: if isAdmin();
+    }
+  }
+}
