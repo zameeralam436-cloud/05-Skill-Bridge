@@ -40,7 +40,7 @@ export const TagInput = ({
   return (
     <div className={`w-full space-y-2 ${className}`}>
       {label && (
-        <label htmlFor={inputId} className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+        <label htmlFor={inputId} className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
           {label}
         </label>
       )}
@@ -54,10 +54,10 @@ export const TagInput = ({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`flex-1 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 px-3.5 py-2.5 bg-white ${
+          className={`flex-1 rounded-lg border text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 px-3.5 py-2.5 bg-white dark:bg-slate-950 ${
             error
-              ? 'border-rose-400 text-rose-900 focus:border-rose-500 focus:ring-rose-200'
-              : 'border-slate-300 text-slate-900 focus:border-indigo-500 focus:ring-indigo-100 hover:border-slate-400'
+              ? 'border-rose-400 text-rose-900 dark:text-rose-100 focus:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950'
+              : 'border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:border-purple-500 focus:ring-purple-100 dark:focus:ring-purple-950 hover:border-slate-400 dark:hover:border-slate-650'
           }`}
         />
         <Button
@@ -79,7 +79,7 @@ export const TagInput = ({
             <button
               type="button"
               onClick={() => handleRemoveTag(tag)}
-              className="text-indigo-400 hover:text-indigo-700 transition-colors p-0.5 rounded-full hover:bg-indigo-100 focus:outline-none"
+              className="text-purple-400 hover:text-purple-700 dark:text-purple-300 dark:hover:text-purple-100 transition-colors p-0.5 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/50 focus:outline-none"
               aria-label={`Remove ${tag}`}
             >
               <X className="w-3.5 h-3.5" />
@@ -87,14 +87,14 @@ export const TagInput = ({
           </Badge>
         ))}
         {tags.length === 0 && (
-          <span className="text-xs text-slate-400 italic py-1">No tags added yet.</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500 italic py-1">No tags added yet.</span>
         )}
       </div>
 
       {error ? (
-        <p className="text-xs text-rose-600 font-medium">{error}</p>
+        <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">{error}</p>
       ) : helperText ? (
-        <p className="text-xs text-slate-500">{helperText}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{helperText}</p>
       ) : null}
     </div>
   );

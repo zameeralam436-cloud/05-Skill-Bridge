@@ -64,7 +64,7 @@ export const Login = () => {
       <div className="max-w-md mx-auto py-6 sm:py-12">
         <Card className="shadow-lg border-slate-200">
           <CardHeader className="text-center bg-gradient-to-b from-slate-50 to-white pb-6">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-indigo-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-purple-500/20">
               <Compass className="w-6 h-6" />
             </div>
             <CardTitle className="text-2xl font-bold text-slate-900">Welcome Back</CardTitle>
@@ -108,7 +108,7 @@ export const Login = () => {
 
           <CardFooter className="justify-center bg-slate-50 text-xs text-slate-500 gap-1">
             <span>Don't have an account?</span>
-            <Link to="/signup" className="text-indigo-600 font-semibold hover:underline">
+            <Link to="/signup" className="text-purple-600 font-semibold hover:underline">
               Sign up here
             </Link>
           </CardFooter>

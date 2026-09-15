@@ -76,29 +76,29 @@ export const Signup = () => {
       <div className="max-w-xl mx-auto py-6 sm:py-10">
         <Card className="shadow-lg border-slate-200">
           <CardHeader className="text-center bg-gradient-to-b from-slate-50 to-white pb-6">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-indigo-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-purple-500/20">
               <Sparkles className="w-6 h-6" />
             </div>
             <CardTitle className="text-2xl font-bold text-slate-900">Join SkillBridge</CardTitle>
             <CardDescription>Select your account role and build your career bridge</CardDescription>
 
             {/* Role Toggle Selector */}
-            <div className="grid grid-cols-2 gap-3 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
               <button
                 type="button"
                 onClick={() => setRole('student')}
                 className={`p-3.5 rounded-xl border text-left transition-all flex items-center gap-3 ${
                   role === 'student'
-                    ? 'border-indigo-600 bg-indigo-50/70 ring-2 ring-indigo-500/20 text-indigo-950 font-semibold'
-                    : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
+                    ? 'border-purple-600 bg-purple-50/70 dark:bg-purple-950/20 ring-2 ring-purple-500/20 text-purple-950 dark:text-purple-100 font-semibold'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900'
                 }`}
               >
-                <div className={`p-2 rounded-lg ${role === 'student' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                <div className={`p-2 rounded-lg ${role === 'student' ? 'bg-purple-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold">I'm a Student</div>
-                  <div className="text-xs text-slate-500 font-normal">Build skills & find jobs</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-normal">Build skills & find jobs</div>
                 </div>
               </button>
 
@@ -107,16 +107,16 @@ export const Signup = () => {
                 onClick={() => setRole('employer')}
                 className={`p-3.5 rounded-xl border text-left transition-all flex items-center gap-3 ${
                   role === 'employer'
-                    ? 'border-indigo-600 bg-indigo-50/70 ring-2 ring-indigo-500/20 text-indigo-950 font-semibold'
-                    : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
+                    ? 'border-purple-600 bg-purple-50/70 dark:bg-purple-950/20 ring-2 ring-purple-500/20 text-purple-950 dark:text-purple-100 font-semibold'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900'
                 }`}
               >
-                <div className={`p-2 rounded-lg ${role === 'employer' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                <div className={`p-2 rounded-lg ${role === 'employer' ? 'bg-purple-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                   <Briefcase className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold">I'm an Employer</div>
-                  <div className="text-xs text-slate-500 font-normal">Recruit verified talent</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-normal">Recruit verified talent</div>
                 </div>
               </button>
             </div>
@@ -170,7 +170,7 @@ export const Signup = () => {
 
           <CardFooter className="justify-center bg-slate-50 text-xs text-slate-500 gap-1">
             <span>Already have an account?</span>
-            <Link to="/login" className="text-indigo-600 font-semibold hover:underline">
+            <Link to="/login" className="text-purple-600 font-semibold hover:underline">
               Log in here
             </Link>
           </CardFooter>

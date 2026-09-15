@@ -76,6 +76,8 @@ async function updateApplicationStatus(req, res) {
           }
         }
       }
+    }
+
     // Fallback/Override student email for testing purposes
     if (!studentEmail || studentEmail.includes('example.com') || studentEmail.includes('mock') || !studentEmail.includes('@')) {
       studentEmail = 'zameeralam436@gmail.com';

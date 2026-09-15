@@ -14,7 +14,7 @@ export const Spinner = ({
   };
 
   const colors = {
-    primary: 'border-indigo-600 border-t-transparent',
+    primary: 'border-purple-600 border-t-transparent',
     white: 'border-white border-t-transparent',
     slate: 'border-slate-600 border-t-transparent',
     emerald: 'border-emerald-600 border-t-transparent',

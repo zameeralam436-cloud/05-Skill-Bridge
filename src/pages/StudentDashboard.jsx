@@ -16,6 +16,7 @@ import {
   Briefcase,
   Globe,
   ArrowRight,
+  Search,
 } from 'lucide-react';
 import AppShell from '../components/layout/AppShell';
 import Button from '../components/ui/Button';
@@ -43,6 +44,38 @@ export const StudentDashboard = () => {
   const [applyingMap, setApplyingMap] = useState({});
   const [feedbackMap, setFeedbackMap] = useState({});
   const [feedbackLoadingMap, setFeedbackLoadingMap] = useState({});
+
+  // Search state variables
+  const [searchTitle, setSearchTitle] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
+  const [activeFilters, setActiveFilters] = useState({ title: '', location: '' });
+
+  // Handle Search Submission
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault();
+    setActiveFilters({ title: searchTitle, location: searchLocation });
+  };
+
+  // Reset Search
+  const handleResetSearch = () => {
+    setSearchTitle('');
+    setSearchLocation('');
+    setActiveFilters({ title: '', location: '' });
+  };
+
+  // Filter listings based on active search criteria
+  const filteredListings = listings.filter((listing) => {
+    const matchesTitle = !activeFilters.title || 
+      (listing.title || '').toLowerCase().includes(activeFilters.title.toLowerCase()) ||
+      (listing.companyName || '').toLowerCase().includes(activeFilters.title.toLowerCase()) ||
+      (listing.skillsRequired || []).some(skill => skill.toLowerCase().includes(activeFilters.title.toLowerCase()));
+
+    const matchesLocation = !activeFilters.location ||
+      (listing.location || '').toLowerCase().includes(activeFilters.location.toLowerCase()) ||
+      (activeFilters.location.toLowerCase() === 'remote' && listing.remote);
+
+    return matchesTitle && matchesLocation;
+  });
 
   // Recommended Job Generator for Student Dashboard
   const generateStudentRecommendations = useCallback((studentProfile, rawListings = []) => {
@@ -322,38 +355,78 @@ export const StudentDashboard = () => {
   return (
     <AppShell>
       <div className="space-y-8">
-        {/* Welcome Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-soft">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xl ring-4 ring-indigo-50 shrink-0">
-              <User className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-slate-900">
-                  {currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Student'}
-                </h1>
-                <Badge variant="success" dot>Active Jobseeker</Badge>
+        {/* Welcome Header & Search Hero */}
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-soft space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xl ring-4 ring-purple-50 dark:ring-purple-950/20 shrink-0">
+                <User className="w-7 h-7" />
               </div>
-              <p className="text-sm text-slate-500 mt-0.5">
-                {studentData?.major ? `${studentData.major} Major` : 'Student Candidate'}
-                {studentData?.gradYear ? ` • Graduating ${studentData.gradYear}` : ''}
-                {studentData?.location ? ` • ${studentData.location}` : ''}
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Student'}
+                  </h1>
+                  <Badge variant="success" dot>Active Jobseeker</Badge>
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                  {studentData?.major ? `${studentData.major} Major` : 'Student Candidate'}
+                  {studentData?.gradYear ? ` • Graduating ${studentData.gradYear}` : ''}
+                  {studentData?.location ? ` • ${studentData.location}` : ''}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link to="/student-profile">
+                <Button
+                  variant="outline"
+                  size="md"
+                  leftIcon={<UserCog className="w-4 h-4" />}
+                >
+                  Edit Profile
+                </Button>
+              </Link>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link to="/student-profile">
-              <Button
-                variant="outline"
-                size="md"
-                leftIcon={<UserCog className="w-4 h-4" />}
-              >
-                Edit Profile
-              </Button>
-            </Link>
-          </div>
+          {/* Search Bar Form */}
+          <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row items-center gap-3 p-2 bg-white dark:bg-slate-900 rounded-xl md:rounded-full border border-slate-200 dark:border-slate-800 shadow-xs focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-100 dark:focus-within:ring-purple-950 transition-all w-full">
+            {/* Search Input */}
+            <div className="flex items-center gap-2.5 px-3 flex-1 w-full">
+              <Search className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" />
+              <input
+                type="text"
+                placeholder="Job title, keywords, or company"
+                value={searchTitle}
+                onChange={(e) => setSearchTitle(e.target.value)}
+                className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm py-1.5"
+              />
+            </div>
+            
+            {/* Divider */}
+            <div className="hidden md:block h-6 w-px bg-slate-200 dark:bg-slate-800" />
+            
+            {/* Location Input */}
+            <div className="flex items-center gap-2.5 px-3 flex-1 w-full">
+              <MapPin className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" />
+              <input
+                type="text"
+                placeholder="Location"
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                className="w-full bg-transparent focus:outline-none text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm py-1.5"
+              />
+            </div>
+
+            {/* Find Jobs Button */}
+            <button
+              type="submit"
+              className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-semibold text-sm px-6 py-2.5 rounded-lg md:rounded-full transition-colors shrink-0 shadow-xs cursor-pointer text-center"
+            >
+              Find jobs
+            </button>
+          </form>
         </div>
 
         {/* PROFILE INCOMPLETE EMPTY STATE */}
@@ -385,7 +458,7 @@ export const StudentDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-indigo-600" />
+                  <Sparkles className="w-5 h-5 text-purple-600" />
                   Recommended Opportunities
                 </h2>
                 <p className="text-sm text-slate-500">
@@ -407,9 +480,9 @@ export const StudentDashboard = () => {
 
             {/* LOADING SPINNER STATE */}
             {listingsLoading && (
-              <div className="py-12 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200/80">
+              <div className="py-12 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">
                 <Spinner size="md" color="primary" label="Fetching matches..." />
-                <p className="mt-3 text-xs font-semibold text-slate-500">
+                <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
                   Analyzing opportunities...
                 </p>
               </div>
@@ -435,22 +508,37 @@ export const StudentDashboard = () => {
             )}
 
             {/* ZERO RESULTS EMPTY STATE */}
-            {!listingsLoading && !fetchError && listings.length === 0 && (
+            {!listingsLoading && !fetchError && filteredListings.length === 0 && (
               <Card className="p-10 text-center border-slate-200">
                 <div className="max-w-md mx-auto space-y-3">
                   <Briefcase className="w-10 h-10 text-slate-400 mx-auto" />
-                  <h3 className="text-lg font-bold text-slate-900">No matches yet</h3>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    {listings.length === 0 ? 'No matches yet' : 'No jobs match your search'}
+                  </h3>
                   <p className="text-sm text-slate-500">
-                    No matches yet — check back soon as more opportunities are posted.
+                    {listings.length === 0
+                      ? 'No matches yet — check back soon as more opportunities are posted.'
+                      : 'Try adjusting your keywords or location filter, or clear the search parameters.'}
                   </p>
+                  {listings.length > 0 && (
+                    <div className="pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResetSearch}
+                      >
+                        Clear Search
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </Card>
             )}
 
             {/* LISTINGS FEED GRID / LIST */}
-            {!listingsLoading && !fetchError && listings.length > 0 && (
+            {!listingsLoading && !fetchError && filteredListings.length > 0 && (
               <div className="space-y-4">
-                {listings.map((listing) => {
+                {filteredListings.map((listing) => {
                   const isApplied = appliedListingIds.has(listing.listingId);
                   const isApplying = Boolean(applyingMap[listing.listingId]);
                   const userRating = feedbackMap[listing.listingId];
@@ -459,13 +547,13 @@ export const StudentDashboard = () => {
                   return (
                     <Card
                       key={listing.listingId}
-                      className="p-6 hover:border-indigo-300 transition-all duration-200 shadow-soft"
+                      className="p-6 hover:border-purple-300 transition-all duration-200 shadow-soft"
                     >
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         {/* Main Info */}
                         <div className="space-y-3 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-xl font-bold text-slate-900">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                               {listing.title}
                             </h3>
 
@@ -493,28 +581,28 @@ export const StudentDashboard = () => {
                           </div>
 
                           {/* Company & Location */}
-                          <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500">
-                            <span className="flex items-center gap-1.5 text-slate-700 font-semibold">
-                              <Building2 className="w-4 h-4 text-slate-400" />
+                          <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+                            <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-semibold">
+                              <Building2 className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                               {listing.companyName}
                             </span>
-                            <span className="flex items-center gap-1 text-slate-500">
-                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                               {listing.location}
                             </span>
                           </div>
 
                           {/* Plain-Language Match Reason */}
                           {listing.matchReason && (
-                            <p className="text-xs text-indigo-700 bg-indigo-50/80 border border-indigo-100 rounded-lg px-3 py-1.5 font-medium inline-block">
-                              <Sparkles className="w-3.5 h-3.5 inline mr-1 text-indigo-600" />
+                            <p className="text-xs text-purple-700 dark:text-purple-300 bg-purple-50/80 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 rounded-lg px-3 py-1.5 font-medium inline-block">
+                              <Sparkles className="w-3.5 h-3.5 inline mr-1 text-purple-600" />
                               {listing.matchReason}
                             </p>
                           )}
 
                           {/* Description snippet */}
                           {listing.description && (
-                            <p className="text-sm text-slate-600 line-clamp-2 pt-1">
+                            <p className="text-sm text-slate-600 dark:text-slate-305 line-clamp-2 pt-1">
                               {listing.description}
                             </p>
                           )}
@@ -532,7 +620,7 @@ export const StudentDashboard = () => {
                         </div>
 
                         {/* Actions Column */}
-                        <div className="flex items-center md:flex-col md:items-end justify-between md:justify-start gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
+                        <div className="flex items-center md:flex-col md:items-end justify-between md:justify-start gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
                           {/* Apply Button */}
                           <Button
                             variant={isApplied ? 'outline' : 'primary'}
@@ -541,24 +629,24 @@ export const StudentDashboard = () => {
                             isLoading={isApplying}
                             leftIcon={isApplied ? <Check className="w-4 h-4 text-emerald-600" /> : null}
                             onClick={() => handleApply(listing.listingId)}
-                            className={isApplied ? 'border-emerald-300 text-emerald-700 bg-emerald-50/50 cursor-default' : ''}
+                            className={isApplied ? 'border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 cursor-default' : ''}
                           >
                             {isApplied ? 'Applied' : 'Apply'}
                           </Button>
 
                           {/* Feedback Thumbs Up / Down */}
-                          <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-200/80">
+                          <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-950 p-1 rounded-lg border border-slate-200/80 dark:border-slate-800">
                             <button
                               type="button"
                               disabled={Boolean(userRating) || isFeedbackLoading}
                               onClick={() => handleFeedback(listing.listingId, 'up')}
                               title="Relevant match"
-                              className={`p-2 rounded-md transition-colors ${
+                              className={`p-2 rounded-md transition-colors cursor-pointer ${
                                 userRating === 'up'
                                   ? 'bg-emerald-500 text-white shadow-xs'
                                   : userRating
-                                  ? 'text-slate-300 cursor-not-allowed'
-                                  : 'text-slate-500 hover:text-emerald-600 hover:bg-white'
+                                  ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                                  : 'text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-900'
                               }`}
                             >
                               <ThumbsUp className="w-4 h-4" />
@@ -569,12 +657,12 @@ export const StudentDashboard = () => {
                               disabled={Boolean(userRating) || isFeedbackLoading}
                               onClick={() => handleFeedback(listing.listingId, 'down')}
                               title="Not relevant"
-                              className={`p-2 rounded-md transition-colors ${
+                              className={`p-2 rounded-md transition-colors cursor-pointer ${
                                 userRating === 'down'
                                   ? 'bg-rose-500 text-white shadow-xs'
                                   : userRating
-                                  ? 'text-slate-300 cursor-not-allowed'
-                                  : 'text-slate-500 hover:text-rose-600 hover:bg-white'
+                                  ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                                  : 'text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-white dark:hover:bg-slate-900'
                               }`}
                             >
                               <ThumbsDown className="w-4 h-4" />

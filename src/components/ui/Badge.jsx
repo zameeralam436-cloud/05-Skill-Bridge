@@ -11,7 +11,7 @@ export const Badge = ({
   const baseStyles = "inline-flex items-center font-medium rounded-full transition-colors duration-150";
 
   const variants = {
-    primary: "bg-indigo-50 text-indigo-700 border border-indigo-200/60",
+    primary: "bg-purple-50 text-purple-700 border border-purple-200/60",
     success: "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
     warning: "bg-amber-50 text-amber-800 border border-amber-200/60",
     danger: "bg-rose-50 text-rose-700 border border-rose-200/60",
@@ -20,7 +20,7 @@ export const Badge = ({
   };
 
   const dotColors = {
-    primary: "bg-indigo-500",
+    primary: "bg-purple-500",
     success: "bg-emerald-500",
     warning: "bg-amber-500",
     danger: "bg-rose-500",
@@ -40,7 +40,7 @@ export const Badge = ({
       {...props}
     >
       {dot && (
-        <span className={`w-1.5 h-1.5 rounded-full ${dotColors[variant] || 'bg-indigo-500'}`} />
+        <span className={`w-1.5 h-1.5 rounded-full ${dotColors[variant] || 'bg-purple-500'}`} />
       )}
       {children}
     </span>

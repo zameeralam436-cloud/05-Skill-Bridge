@@ -18,8 +18,8 @@ export const Toast = ({ toast, onClose }) => {
       border: 'border-rose-200 bg-rose-50/90 text-rose-950',
     },
     info: {
-      icon: <Info className="w-5 h-5 text-indigo-500 shrink-0" />,
-      border: 'border-indigo-200 bg-indigo-50/90 text-indigo-950',
+      icon: <Info className="w-5 h-5 text-purple-500 shrink-0" />,
+      border: 'border-purple-200 bg-purple-50/90 text-purple-950',
     },
   };
 

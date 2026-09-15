@@ -416,7 +416,7 @@ export const AdminDashboard = () => {
         {/* Header Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-6 rounded-2xl shadow-xl border border-slate-800">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500 text-white flex items-center justify-center font-bold shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-purple-500 text-white flex items-center justify-center font-bold shadow-md shrink-0">
               <Shield className="w-6 h-6" />
             </div>
             <div>
@@ -462,9 +462,9 @@ export const AdminDashboard = () => {
         {activeTab === 'pending' && (
           <div className="space-y-6">
             {loadingPending ? (
-              <div className="py-16 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200">
+              <div className="py-16 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <Spinner size="lg" color="primary" label="Loading pending listings..." />
-                <p className="mt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Fetching Moderation Queue...
                 </p>
               </div>
@@ -486,10 +486,11 @@ export const AdminDashboard = () => {
                     Listings pending admin review (ordered oldest first)
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-700">
-                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+                <CardContent className="space-y-4">
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+                      <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                         <tr>
                           <th className="py-3.5 px-4">Title & Company</th>
                           <th className="py-3.5 px-4">Type</th>
@@ -498,12 +499,12 @@ export const AdminDashboard = () => {
                           <th className="py-3.5 px-4 text-right">Moderation Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {pendingListings.map((listing) => (
-                          <tr key={listing.id} className="hover:bg-slate-50/50">
+                          <tr key={listing.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
                             <td className="py-4 px-4">
-                              <div className="font-bold text-slate-900">{listing.title}</div>
-                              <div className="text-xs text-slate-500 mt-0.5">
+                              <div className="font-bold text-slate-900 dark:text-white">{listing.title}</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                 {listing.companyName}
                               </div>
                             </td>
@@ -512,10 +513,10 @@ export const AdminDashboard = () => {
                                 {listing.type || 'Internship'}
                               </Badge>
                             </td>
-                            <td className="py-4 px-4 text-xs text-slate-600">
+                            <td className="py-4 px-4 text-xs text-slate-600 dark:text-slate-350">
                               {listing.location || 'Remote'}
                             </td>
-                            <td className="py-4 px-4 text-xs text-slate-500">
+                            <td className="py-4 px-4 text-xs text-slate-500 dark:text-slate-400">
                               {formatDate(listing.createdAt)}
                             </td>
                             <td className="py-4 px-4 text-right">
@@ -544,6 +545,49 @@ export const AdminDashboard = () => {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Mobile Card List View */}
+                  <div className="block md:hidden space-y-4">
+                    {pendingListings.map((listing) => (
+                      <div key={listing.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 space-y-3 shadow-sm">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-white text-base">{listing.title}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{listing.companyName}</div>
+                          </div>
+                          <Badge variant="primary" size="sm" className="shrink-0">
+                            {listing.type || 'Internship'}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                          <div>Location: <span className="font-semibold text-slate-700 dark:text-slate-300">{listing.location || 'Remote'}</span></div>
+                          <div>Submitted: {formatDate(listing.createdAt)}</div>
+                        </div>
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-850">
+                          <Button
+                            variant="success"
+                            size="sm"
+                            className="flex-1 justify-center"
+                            isLoading={actionLoadingId === listing.id}
+                            leftIcon={<CheckCircle className="w-3.5 h-3.5" />}
+                            onClick={() => handleApprove(listing.id)}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            className="flex-1 justify-center"
+                            disabled={actionLoadingId === listing.id}
+                            leftIcon={<XCircle className="w-3.5 h-3.5" />}
+                            onClick={() => setRejectModalListing(listing)}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -592,7 +636,7 @@ export const AdminDashboard = () => {
         {activeTab === 'users' && (
           <div className="space-y-6">
             {/* Filters Row */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
               <div className="w-full sm:w-72">
                 <Input
                   type="text"
@@ -619,9 +663,9 @@ export const AdminDashboard = () => {
 
             {/* Users Table */}
             {loadingUsers ? (
-              <div className="py-16 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200">
+              <div className="py-16 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <Spinner size="lg" color="primary" label="Loading users directory..." />
-                <p className="mt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Loading Accounts...
                 </p>
               </div>
@@ -631,10 +675,11 @@ export const AdminDashboard = () => {
               </Card>
             ) : (
               <Card>
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-700">
-                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
+                <CardContent className="p-0 space-y-4">
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+                      <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
                         <tr>
                           <th className="py-3.5 px-6">Name</th>
                           <th className="py-3.5 px-6">Email</th>
@@ -643,19 +688,19 @@ export const AdminDashboard = () => {
                           <th className="py-3.5 px-6 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {filteredUsers.map((u) => (
-                          <tr key={u.id} className="hover:bg-slate-50/50">
-                            <td className="py-4 px-6 font-semibold text-slate-900">
+                          <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
+                            <td className="py-4 px-6 font-semibold text-slate-900 dark:text-white">
                               {u.name || 'Unnamed User'}
                             </td>
-                            <td className="py-4 px-6 text-slate-600">{u.email}</td>
+                            <td className="py-4 px-6 text-slate-600 dark:text-slate-350">{u.email}</td>
                             <td className="py-4 px-6">
                               <Badge variant={getRoleBadgeVariant(u.role)} size="sm">
                                 {u.role ? u.role.toUpperCase() : 'STUDENT'}
                               </Badge>
                             </td>
-                            <td className="py-4 px-6 text-xs text-slate-500">
+                            <td className="py-4 px-6 text-xs text-slate-500 dark:text-slate-450">
                               {formatDate(u.createdAt)}
                             </td>
                             <td className="py-4 px-6 text-right">
@@ -672,6 +717,34 @@ export const AdminDashboard = () => {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Mobile Card List View for Users */}
+                  <div className="block md:hidden space-y-4 p-4">
+                    {filteredUsers.map((u) => (
+                      <div key={u.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 space-y-3 shadow-sm">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-white text-base">{u.name || 'Unnamed User'}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-[200px]">{u.email}</div>
+                          </div>
+                          <Badge variant={getRoleBadgeVariant(u.role)} size="sm" className="shrink-0">
+                            {u.role ? u.role.toUpperCase() : 'STUDENT'}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                          <div>Joined: {formatDate(u.createdAt)}</div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            leftIcon={<Eye className="w-3.5 h-3.5" />}
+                            onClick={() => handleViewUser(u)}
+                          >
+                            Profile
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -698,7 +771,7 @@ export const AdminDashboard = () => {
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Total Students
                     </span>
-                    <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+                    <div className="p-2.5 rounded-xl bg-purple-50 text-purple-600">
                       <Users className="w-5 h-5" />
                     </div>
                   </div>
@@ -743,7 +816,7 @@ export const AdminDashboard = () => {
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Total Applications
                     </span>
-                    <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                    <div className="p-2.5 rounded-xl bg-purple-50 text-purple-600">
                       <CheckCircle className="w-5 h-5" />
                     </div>
                   </div>
@@ -798,7 +871,7 @@ export const AdminDashboard = () => {
             <div className="space-y-6">
               {/* Profile Info */}
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-indigo-600">
+                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-purple-600">
                   Profile Information
                 </h4>
                 {!detailProfile ? (
@@ -855,7 +928,7 @@ export const AdminDashboard = () => {
 
               {/* Applications */}
               <div className="space-y-3">
-                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-indigo-600">
+                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-purple-600">
                   Job Applications ({detailList.length})
                 </h4>
                 {detailList.length === 0 ? (
@@ -912,7 +985,7 @@ export const AdminDashboard = () => {
             <div className="space-y-6">
               {/* Profile Info */}
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-indigo-600">
+                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-purple-600">
                   Company Information
                 </h4>
                 {!detailProfile ? (
@@ -949,7 +1022,7 @@ export const AdminDashboard = () => {
 
               {/* Listings */}
               <div className="space-y-3">
-                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-indigo-600">
+                <h4 className="text-sm font-bold text-slate-900 border-b pb-1.5 uppercase tracking-wider text-purple-600">
                   Job Listings Posted ({detailList.length})
                 </h4>
                 {detailList.length === 0 ? (

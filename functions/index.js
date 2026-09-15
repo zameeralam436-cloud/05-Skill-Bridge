@@ -29,7 +29,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
-const { sendCandidateEmail } = require("./emailHelper");
+const { sendCandidateEmail, getStatusEmailContent } = require("./emailHelper");
 const logger = require("firebase-functions/logger");
 
 initializeApp();
@@ -306,8 +306,8 @@ exports.sendSelectionEmail = onDocumentUpdated(
       const oldStatus = (beforeData.status || "").toLowerCase();
       const newStatus = (afterData.status || "").toLowerCase();
 
-    // Only fire when status changes to "selected" or "rejected"
-      if (oldStatus === newStatus || !["selected", "rejected"].includes(newStatus)) {
+      // Only fire when status changes to "selected", "rejected", or "interview"
+      if (oldStatus === newStatus || !["selected", "rejected", "interview"].includes(newStatus)) {
         return;
       }
 
@@ -375,47 +375,13 @@ exports.sendSelectionEmail = onDocumentUpdated(
         }
       }
 
-      // 3. Prepare Email Content
-      const isSelected = newStatus === "selected";
-      const subject = isSelected
-        ? `🎉 Congratulations! You have been selected for ${listingTitle} at ${companyName}`
-        : `Update regarding your application for ${listingTitle} at ${companyName}`;
-
-      const statusBadgeColor = isSelected ? "#16a34a" : "#dc2626";
-      const statusText = isSelected ? "Selected" : "Not Selected";
-
-      const bodyHtml = `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 24px; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #4f46e5; margin: 0; font-size: 24px;">SkillBridge</h1>
-            <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Job Application Update</p>
-          </div>
-          
-          <h2 style="color: #0f172a; font-size: 20px;">Dear ${studentName},</h2>
-          <p style="line-height: 1.6; color: #334155;">
-            ${
-              isSelected
-                ? `We are thrilled to inform you that <strong>${companyName}</strong> has reviewed your application and selected you for the <strong>${listingTitle}</strong> position!`
-                : `Thank you for taking the time to apply for the <strong>${listingTitle}</strong> position at <strong>${companyName}</strong>. After careful review, the hiring team has decided to move forward with other candidates at this time.`
-            }
-          </p>
-          
-          <div style="background-color: #f8fafc; border-left: 4px solid ${statusBadgeColor}; padding: 16px; border-radius: 6px; margin: 24px 0;">
-            <h3 style="margin: 0 0 8px 0; color: #1e293b; font-size: 16px;">Application Details:</h3>
-            <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Role:</strong> ${listingTitle}</p>
-            <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Company:</strong> ${companyName}</p>
-            <p style="margin: 4px 0; font-size: 14px; color: #475569;"><strong>Status:</strong> <span style="color: ${statusBadgeColor}; font-weight: 600;">${statusText}</span></p>
-          </div>
-          
-          <p style="line-height: 1.6; color: #334155;">
-            Log into your SkillBridge dashboard to view details and manage your applications.
-          </p>
-
-          <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 12px; color: #94a3b8;">
-            Sent automatically via SkillBridge Hiring Platform
-          </div>
-        </div>
-      `;
+      // 3. Prepare Email Content using Shared Helper Template
+      const { subject, htmlBody } = getStatusEmailContent({
+        status: newStatus,
+        studentName,
+        listingTitle,
+        companyName,
+      });
 
       // Fallback routing rule: check student's email. Override if mock/placeholder
       let recipientEmail = studentEmail;
@@ -428,7 +394,7 @@ exports.sendSelectionEmail = onDocumentUpdated(
       const sendResult = await sendCandidateEmail({
         to: recipientEmail,
         subject: subject,
-        htmlBody: bodyHtml,
+        htmlBody: htmlBody,
         replyToEmail: employerEmail,
         companyName: companyName,
       });

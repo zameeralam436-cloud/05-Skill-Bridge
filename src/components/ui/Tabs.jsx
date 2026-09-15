@@ -12,12 +12,12 @@ export const Tabs = ({ tabs, activeTab, onChange, className = '' }) => {
               onClick={() => onChange(tab.id)}
               className={`whitespace-nowrap pb-3.5 px-1 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 ${
                 isActive
-                  ? 'border-indigo-600 text-indigo-600'
+                  ? 'border-purple-600 text-purple-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >
               {tab.icon && (
-                <span className={isActive ? 'text-indigo-600' : 'text-slate-400'}>
+                <span className={isActive ? 'text-purple-600' : 'text-slate-400'}>
                   {tab.icon}
                 </span>
               )}
@@ -26,7 +26,7 @@ export const Tabs = ({ tabs, activeTab, onChange, className = '' }) => {
                 <span
                   className={`ml-1.5 py-0.5 px-2 text-xs rounded-full font-bold ${
                     isActive
-                      ? 'bg-indigo-100 text-indigo-700'
+                      ? 'bg-purple-100 text-purple-700'
                       : 'bg-slate-100 text-slate-600'
                   }`}
                 >

@@ -342,7 +342,7 @@ export const EmployerDashboard = () => {
     }
   };
 
-  // Send direct selection/rejection email from client (useful for free tier or local testing)
+  // Send direct selection/rejection/interview email from client (useful for free tier or local testing)
   const sendClientSelectionEmail = async (applicant, newStatus) => {
     const resendApiKey = import.meta.env.VITE_RESEND_API_KEY;
     if (!resendApiKey || resendApiKey.startsWith('re_your_resend')) {
@@ -360,13 +360,28 @@ export const EmployerDashboard = () => {
       return;
     }
 
-    const isSelected = newStatus.toLowerCase() === 'selected';
-    const subject = isSelected
-      ? `🎉 Congratulations! You have been selected for ${listingTitle} at ${companyName}`
-      : `Update regarding your application for ${listingTitle} at ${companyName}`;
+    const normStatus = newStatus.toLowerCase();
+    let subject = '';
+    let statusBadgeColor = '#2563eb';
+    let statusText = 'Interview Invited';
+    let messageBodyHtml = '';
 
-    const statusBadgeColor = isSelected ? '#16a34a' : '#dc2626';
-    const statusText = isSelected ? 'Selected' : 'Not Selected';
+    if (normStatus === 'selected') {
+      subject = `🎉 Congratulations! You have been selected for ${listingTitle} at ${companyName}`;
+      statusBadgeColor = '#16a34a';
+      statusText = 'Selected';
+      messageBodyHtml = `We are thrilled to inform you that <strong>${companyName}</strong> has reviewed your application and selected you for the <strong>${listingTitle}</strong> position!`;
+    } else if (normStatus === 'interview') {
+      subject = `You've been invited to interview for ${listingTitle} at ${companyName}`;
+      statusBadgeColor = '#2563eb';
+      statusText = 'Interview Invited';
+      messageBodyHtml = `Great news! <strong>${companyName}</strong> would like to invite you for an interview for the <strong>${listingTitle}</strong> position.<br/><br/>The hiring team will follow up shortly with specific details regarding the date, time, and format of the interview (such as a video link, phone call, or in-person meeting). Please check your email regularly and be ready to reply to coordinate next steps.`;
+    } else {
+      subject = `Update regarding your application for ${listingTitle} at ${companyName}`;
+      statusBadgeColor = '#dc2626';
+      statusText = 'Not Selected';
+      messageBodyHtml = `Thank you for taking the time to apply for the <strong>${listingTitle}</strong> position at <strong>${companyName}</strong>. After careful review, the hiring team has decided to move forward with other candidates at this time.`;
+    }
 
     const bodyHtml = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 24px; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
@@ -377,11 +392,7 @@ export const EmployerDashboard = () => {
         
         <h2 style="color: #0f172a; font-size: 20px;">Dear ${studentName},</h2>
         <p style="line-height: 1.6; color: #334155;">
-          ${
-            isSelected
-              ? `We are thrilled to inform you that <strong>${companyName}</strong> has reviewed your application and selected you for the <strong>${listingTitle}</strong> position!`
-              : `Thank you for taking the time to apply for the <strong>${listingTitle}</strong> position at <strong>${companyName}</strong>. After careful review, the hiring team has decided to move forward with other candidates at this time.`
-          }
+          ${messageBodyHtml}
         </p>
         
         <div style="background-color: #f8fafc; border-left: 4px solid ${statusBadgeColor}; padding: 16px; border-radius: 6px; margin: 24px 0;">
@@ -411,10 +422,11 @@ export const EmployerDashboard = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'SkillBridge Hiring <onboarding@resend.dev>',
+          from: `${companyName} via SkillBridge <onboarding@resend.dev>`,
           to: [studentEmail],
           subject: subject,
           html: bodyHtml,
+          reply_to: currentUser?.email || undefined,
         }),
       });
 
@@ -445,7 +457,7 @@ export const EmployerDashboard = () => {
 
       // Send email directly from frontend if local Resend API key is present
       const applicant = listingApplicants.find((a) => a.id === appId);
-      if (applicant && ['selected', 'rejected'].includes(newStatus.toLowerCase())) {
+      if (applicant && ['selected', 'rejected', 'interview'].includes(newStatus.toLowerCase())) {
         await sendClientSelectionEmail(applicant, newStatus);
       }
 
@@ -587,14 +599,14 @@ export const EmployerDashboard = () => {
       <div className="space-y-8">
         {/* Missing Profile Warning Banner */}
         {!profileExists && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 shadow-xs">
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-100 text-amber-700 shrink-0">
+              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 shrink-0">
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
                 <p className="font-semibold text-sm">Complete your company profile</p>
-                <p className="text-xs text-amber-700 mt-0.5">
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                   Add your company name, industry, and details to start posting job listings and connecting with students.
                 </p>
               </div>
@@ -602,7 +614,7 @@ export const EmployerDashboard = () => {
             <Button
               variant="outline"
               size="sm"
-              className="bg-white hover:bg-amber-100/50 border-amber-300 text-amber-900 shrink-0"
+              className="bg-white dark:bg-slate-900 hover:bg-amber-100/50 dark:hover:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 shrink-0"
               onClick={() => navigate('/employer-profile')}
             >
               Complete Profile
@@ -611,15 +623,15 @@ export const EmployerDashboard = () => {
         )}
 
         {/* Header Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-soft">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-soft">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                 {profileExists ? (companyProfile?.companyName || 'TechPulse Innovations') : 'New Employer Account'}
               </h1>
               <Badge variant="primary" dot>Employer Account</Badge>
             </div>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
               {profileExists 
                 ? `${companyProfile?.industry || 'Recruiting Talent Pipeline'} ${companyProfile?.location ? `• ${companyProfile.location}` : '• San Francisco, CA'}`
                 : 'Set up your company details to start recruiting'}
@@ -653,7 +665,7 @@ export const EmployerDashboard = () => {
               <Card className="p-5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Postings</span>
-                  <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600"><Briefcase className="w-5 h-5" /></div>
+                  <div className="p-2 rounded-lg bg-purple-50 text-purple-600"><Briefcase className="w-5 h-5" /></div>
                 </div>
                 <div className="text-3xl font-extrabold text-slate-900 mt-3">{postings.length} Roles</div>
                 <div className="text-xs text-emerald-600 font-medium mt-1">Live Applications Active</div>
@@ -687,7 +699,7 @@ export const EmployerDashboard = () => {
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        <Briefcase className="w-5 h-5 text-indigo-600" />
+                        <Briefcase className="w-5 h-5 text-purple-600" />
                         Your Job Postings & Applicants
                       </CardTitle>
                       <CardDescription>Select a listing to view and manage candidate applications</CardDescription>
@@ -710,15 +722,15 @@ export const EmployerDashboard = () => {
                       postings.map((p) => (
                         <div
                           key={p.id}
-                          className="p-5 rounded-xl border border-slate-200/80 bg-white hover:border-indigo-300 hover:shadow-soft transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                          className="p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-soft transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                         >
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="font-bold text-slate-900 text-base">{p.title}</h4>
+                              <h4 className="font-bold text-slate-900 dark:text-white text-base">{p.title}</h4>
                               <Badge variant={p.variant}>{p.status}</Badge>
                             </div>
-                            <p className="text-xs text-slate-500 mt-1">
-                              <span className="font-semibold text-indigo-600">{p.applicants}</span> candidate application{p.applicants !== 1 ? 's' : ''} received
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                              <span className="font-semibold text-purple-600 dark:text-purple-400">{p.applicants}</span> candidate application{p.applicants !== 1 ? 's' : ''} received
                             </p>
                           </div>
 
@@ -882,7 +894,7 @@ export const EmployerDashboard = () => {
               checked={newJobRemote}
               onChange={(e) => setNewJobRemote(e.target.checked)}
               disabled={submittingJob}
-              className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+              className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500"
             />
             <label htmlFor="newJobRemote" className="text-sm text-slate-700 select-none cursor-pointer">
               This is a fully Remote position
@@ -934,20 +946,20 @@ export const EmployerDashboard = () => {
               return (
                 <div
                   key={app.id}
-                  className="p-4 sm:p-5 rounded-xl border border-slate-200/80 bg-white hover:border-indigo-200 transition-all space-y-3"
+                  className="p-4 sm:p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-purple-200 dark:hover:border-purple-700 transition-all space-y-3"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-base">{app.studentName}</h4>
-                      <p className="text-xs text-slate-500 font-mono mt-0.5">{app.studentEmail}</p>
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-base">{app.studentName}</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">{app.studentEmail}</p>
                       
-                      <div className="flex items-center gap-3 text-xs text-slate-600 mt-1.5">
+                      <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 mt-1.5">
                         <span className="flex items-center gap-1">
-                          <GraduationCap className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                          <GraduationCap className="w-3.5 h-3.5 text-purple-500 shrink-0" />
                           {app.degree}
                         </span>
                         {app.appliedAt && (
-                          <span className="flex items-center gap-1 text-slate-400">
+                          <span className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
                             <Calendar className="w-3.5 h-3.5 shrink-0" />
                             {app.appliedAt?.toDate
                               ? app.appliedAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -958,17 +970,18 @@ export const EmployerDashboard = () => {
                     </div>
 
                     {/* Status Dropdown & Contact Candidate Button */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
                       <Select
                         value={app.status || 'Applied'}
                         onChange={(e) => handleStatusChange(app.id, e.target.value)}
                         options={[
                           { value: 'Applied', label: 'Applied' },
                           { value: 'Under Review', label: 'Under Review' },
+                          { value: 'Interview', label: 'Interview' },
                           { value: 'Selected', label: 'Selected' },
                           { value: 'Rejected', label: 'Rejected' },
                         ]}
-                        className="w-32 text-xs"
+                        className="w-full sm:w-36 text-xs"
                       />
 
                       <Button
@@ -976,6 +989,7 @@ export const EmployerDashboard = () => {
                         size="sm"
                         leftIcon={<Mail className="w-3.5 h-3.5" />}
                         onClick={() => handleOpenContactModal(app)}
+                        className="w-full sm:w-auto justify-center"
                       >
                         Contact Candidate
                       </Button>
@@ -984,8 +998,8 @@ export const EmployerDashboard = () => {
 
                   {/* Skills Badges */}
                   {app.skills && app.skills.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
-                      <span className="text-xs text-slate-400 font-medium mr-1">Skills:</span>
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 font-medium mr-1">Skills:</span>
                       {displaySkills.map((sk) => (
                         <Badge key={sk} variant="primary" size="sm">
                           {sk}

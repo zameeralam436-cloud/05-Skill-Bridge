@@ -157,13 +157,13 @@ export const EmployerProfile = () => {
         </div>
 
         <Card className="shadow-lg border-slate-200">
-          <CardHeader className="bg-gradient-to-b from-slate-50 to-white pb-6 border-b border-slate-100">
+          <CardHeader className="bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/55 dark:to-slate-900 pb-6 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+              <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-500/20">
                 <Building2 className="w-6 h-6" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-bold text-slate-900">Company Profile</CardTitle>
+                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Company Profile</CardTitle>
                 <CardDescription>Manage your company information and recruiter details</CardDescription>
               </div>
             </div>
@@ -173,9 +173,9 @@ export const EmployerProfile = () => {
             <CardContent className="space-y-8 p-6 sm:p-8">
               {/* Section 1: Basic Information */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <Briefcase className="w-5 h-5 text-indigo-600" />
-                  <h3 className="text-base font-bold text-slate-900">Company Information</h3>
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <Briefcase className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Company Information</h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -207,9 +207,9 @@ export const EmployerProfile = () => {
 
               {/* Section 2: Location & Contact */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <MapPin className="w-5 h-5 text-indigo-600" />
-                  <h3 className="text-base font-bold text-slate-900">Location & Website</h3>
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Location & Website</h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -235,9 +235,9 @@ export const EmployerProfile = () => {
 
               {/* Section 3: Overview & Culture */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <FileText className="w-5 h-5 text-indigo-600" />
-                  <h3 className="text-base font-bold text-slate-900">About the Company</h3>
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <FileText className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">About the Company</h3>
                 </div>
 
                 <Textarea
@@ -251,7 +251,7 @@ export const EmployerProfile = () => {
               </div>
             </CardContent>
 
-            <CardFooter className="bg-slate-50 flex items-center justify-between border-t border-slate-100 px-6 py-4">
+            <CardFooter className="bg-slate-50 dark:bg-slate-950 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 px-6 py-4">
               <Button
                 type="button"
                 variant="outline"
